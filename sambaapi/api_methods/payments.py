@@ -13,7 +13,7 @@ def get_mode_of_payments():
         data = response.json()
         if len(data):
             for item in data:
-                print(item.get("Name"))
+                # print(item.get("Name"), item.get("Id"))
                 doc_exists = frappe.db.exists("Mode of Payment", {"mode_of_payment": item.get("Name")})
                 if not doc_exists:
                     try:
@@ -49,7 +49,6 @@ def get_sales_payments(start_time, end_time):
         response = requests.get(url + "/paymentSearch?start=" + start_time + "&end=" + end_time)
         data = response.json()
         if len(data):
-            print(data)
             for item in data:
                 ticket_id = str(item.get("TicketId"))
                 id = str(item.get("Id"))
@@ -58,6 +57,7 @@ def get_sales_payments(start_time, end_time):
                 posting_date = dt.strftime("%Y-%#m-%#d")
                 
                 if ticket_id in ticket_id_list:
+                    print(item.get("TicketId"))
                     doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
                     if not doc_exists:
                         try:
@@ -65,7 +65,7 @@ def get_sales_payments(start_time, end_time):
                             new_doc.payment_type = "Receive"
                             # new_doc.company = get_erp_company(),
                             new_doc.posting_date = posting_date
-                            new_doc.mode_of_payment = get_mop(item.get("PaymentTypeId"))
+                            new_doc.mode_of_payment = get_mop(item.get("PaymentTypeId")) or "Cash"
                             new_doc.custom_samba_id = item.get("Id")
                             new_doc.custom_samba_ticket_id = item.get("TicketId")
                             new_doc.party_type = "Customer"
@@ -124,28 +124,8 @@ def add_outstanding_sales(doc):
             invoice = frappe.get_last_doc("Sales Invoice", filters={"custom_samba_id":doc.custom_samba_ticket_id})
             
             if invoice:
-                pay_amount = doc.paid_amount
-                if invoice.get("grand_total") > pay_amount:
-                    invoice_appended = False
-                    for item in doc.references:
-                        if item.get("reference_name") == invoice.name:
-                            item.allocated_amount = pay_amount
-                            item.due_date = invoice.due_date
-                            invoice_appended = True
-                            
-                    if not invoice_appended == True:
-                        doc.append("references",
-                        {
-                            "reference_doctype": "Sales Invoice",
-                            "reference_name": invoice.name,
-                            "allocated_amount": pay_amount,
-                            "due_date": invoice.due_date
-                        })
-                    
-                    # doc.save() 
-                    # doc.submit()    
-                    
-                if invoice.get("grand_total") <= pay_amount:
+                pay_amount = doc.paid_amount  
+                if pay_amount >= invoice.get("grand_total"):
                     invoice_appended = False
                     for item in doc.references:
                         if item.get("reference_name") == invoice.name:
@@ -161,9 +141,26 @@ def add_outstanding_sales(doc):
                             "allocated_amount": invoice.grand_total,
                             "due_date": invoice.due_date
                         })
-            
-                doc.save() 
-                doc.submit()    
+                    doc.save() 
+                    doc.submit()
+                else:
+                    invoice_appended = False
+                    for item in doc.references:
+                        if item.get("reference_name") == invoice.name:
+                            item.allocated_amount = pay_amount
+                            item.due_date = invoice.due_date
+                            invoice_appended = True
+                            
+                    if not invoice_appended == True:
+                        doc.append("references",
+                        {
+                            "reference_doctype": "Sales Invoice",
+                            "reference_name": invoice.name,
+                            "allocated_amount": pay_amount,
+                            "due_date": invoice.due_date
+                        })
+                    doc.save() 
+                    doc.submit()    
                  
 def get_mop(pay_id):
     mop = "Cash"
@@ -175,6 +172,6 @@ def get_mop(pay_id):
         mop = mop_docs[0].get("mode_of_payment")
             
     return mop
-            
-
+    
+    
     

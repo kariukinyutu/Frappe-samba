@@ -1,8 +1,9 @@
 # Copyright (c) 2023, dev@opensource and contributors
 # For license information, please see license.txt
 import asyncio
-import frappe
+import frappe, traceback
 from frappe.model.document import Document
+from datetime import datetime
 
 from sambaapi.api_methods.stock import get_warehouse, get_menu_item_group, get_menu_item
 from sambaapi.api_methods.customer import get_customer_groups, get_customer, get_sales_customer, get_customer_contact
@@ -18,6 +19,7 @@ class SambaInstanceConnectionSettings(Document):
                 get_menu_item_group()
                 get_menu_item()
                 get_customer_groups()
+                create_pos_customer()
                 get_customer()
                 get_sales_customer()
                 get_customer_contact()
@@ -50,3 +52,22 @@ class SambaInstanceConnectionSettings(Document):
             except:
                 frappe.throw("Something went wrong")            
             
+def create_pos_customer():
+    doc_exists = frappe.db.exists("Customer", {"customer_name": "POS Customer"})
+    if not doc_exists:
+        try:
+            new_doc = frappe.new_doc("Customer")
+            new_doc.customer_name = "POS Customer"
+            new_doc.customer_type = "Company"
+            
+            new_doc.insert()
+            
+            frappe.db.commit()
+        except:
+            new_doc = frappe.new_doc("Samba Error Logs")
+            new_doc.doc_type = "POS Customer"
+            new_doc.error = traceback.format_exc()
+            new_doc.log_time = datetime.now()
+            new_doc.insert()
+
+            frappe.db.commit()
