@@ -1,0 +1,91 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-09 10:36:44.352277",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "samba_connector_url",
+  "connected",
+  "connect",
+  "sales_from_date",
+  "sales_to_date",
+  "get_sales",
+  "payments_from_date",
+  "payments_to_date",
+  "get_payments"
+ ],
+ "fields": [
+  {
+   "fieldname": "connect",
+   "fieldtype": "Button",
+   "label": "Connect"
+  },
+  {
+   "fieldname": "samba_connector_url",
+   "fieldtype": "Data",
+   "label": "Samba Connector Url"
+  },
+  {
+   "default": "0",
+   "fieldname": "connected",
+   "fieldtype": "Check",
+   "label": "Connected"
+  },
+  {
+   "fieldname": "get_sales",
+   "fieldtype": "Button",
+   "label": "Get Sales"
+  },
+  {
+   "fieldname": "get_payments",
+   "fieldtype": "Button",
+   "label": "Get Payments"
+  },
+  {
+   "fieldname": "sales_from_date",
+   "fieldtype": "Datetime",
+   "label": "Sales From Date"
+  },
+  {
+   "fieldname": "payments_from_date",
+   "fieldtype": "Datetime",
+   "label": "Payments From Date"
+  },
+  {
+   "fieldname": "sales_to_date",
+   "fieldtype": "Datetime",
+   "label": "Sales To Date"
+  },
+  {
+   "fieldname": "payments_to_date",
+   "fieldtype": "Datetime",
+   "label": "Payments To Date"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-12-15 22:58:50.985608",
+ "modified_by": "Administrator",
+ "module": "Sambaapi",
+ "name": "Samba Instance Connection Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
