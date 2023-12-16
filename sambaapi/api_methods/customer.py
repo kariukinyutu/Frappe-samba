@@ -54,7 +54,7 @@ def get_customer():
                         new_doc.customer_type = "Company"
                         new_doc.custom_samba_id = item.get("Id")
                         new_doc.territory = "All Territories"
-                        new_doc.customer_group = get_group_for_customer(item.get("EntityTypeId"))
+                        new_doc.customer_group = get_group_for_customer(item.get("EntityTypeId")) or "All Customer Groups"
                         
                         new_doc.insert()
                         
