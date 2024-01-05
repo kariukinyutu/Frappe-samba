@@ -22,7 +22,7 @@ class SambaInstanceConnectionSettings(Document):
                 create_pos_customer()
                 get_customer()
                 get_sales_customer()
-                get_customer_contact()
+                # get_customer_contact()
                 self.connected = 1
                 
             except:
@@ -32,6 +32,12 @@ class SambaInstanceConnectionSettings(Document):
     def get_sales(self):
         start_datetime = self.sales_from_date
         end_datetime = self.sales_to_date
+        start_str = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
+        str_start = datetime.strftime(start_str, "%Y-%m-%dT%H:%M:%S")
+        end_str = datetime.strptime(end_datetime, "%Y-%m-%d %H:%M:%S")
+        str_end = datetime.strftime(end_str, "%Y-%m-%dT%H:%M:%S")
+        
+        print(str_start, str_end)
         if self.sales_from_date and self.sales_to_date:
             try:
                 get_samba_sales(start_datetime, end_datetime)
@@ -59,6 +65,8 @@ def create_pos_customer():
             new_doc = frappe.new_doc("Customer")
             new_doc.customer_name = "POS Customer"
             new_doc.customer_type = "Company"
+            new_doc.territory = "All Territories"
+            new_doc.customer_group = "All Customer Groups"
             
             new_doc.insert()
             

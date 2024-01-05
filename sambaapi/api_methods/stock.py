@@ -1,6 +1,6 @@
 import frappe, requests, traceback
 from datetime import datetime
-from sambaapi.api_methods.utils import get_samba_url
+from sambaapi.api_methods.utils import get_samba_url, get_company
 
 def get_warehouse():
     url = get_samba_url()
@@ -15,6 +15,7 @@ def get_warehouse():
                     try:
                         new_doc = frappe.new_doc("Warehouse")
                         new_doc.warehouse_name = item.get("Name")
+                        new_doc.company = get_company()
                       
                         new_doc.insert()
                         
@@ -28,7 +29,7 @@ def get_warehouse():
 
                         frappe.db.commit()
                 else:
-                    print("exists")#add lofgic for update
+                    print("exists")#add logic for update
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -115,4 +116,3 @@ def get_menu_item():
         new_doc.insert()
 
         frappe.db.commit()
-

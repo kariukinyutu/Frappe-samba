@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "company",
   "samba_connector_url",
   "connected",
   "connect",
@@ -63,12 +64,18 @@
    "fieldname": "payments_to_date",
    "fieldtype": "Datetime",
    "label": "Payments To Date"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-15 22:58:50.985608",
+ "modified": "2023-12-16 03:52:36.422232",
  "modified_by": "Administrator",
  "module": "Sambaapi",
  "name": "Samba Instance Connection Settings",

@@ -50,7 +50,7 @@ def get_customer():
                 if not doc_exists:
                     try:
                         new_doc = frappe.new_doc("Customer")
-                        new_doc.customer_name = item.get("Name")
+                        new_doc.customer_name = str(item.get("Name")) + "-" + str(item.get("Id"))
                         new_doc.customer_type = "Company"
                         new_doc.custom_samba_id = item.get("Id")
                         new_doc.territory = "All Territories"
