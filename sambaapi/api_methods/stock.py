@@ -92,7 +92,7 @@ def get_menu_item():
                         new_doc.item_code = item.get("Name")
                         new_doc.item_name = item.get("Name")
                         new_doc.custom_samba_id = item.get("Id")
-                        new_doc.item_group = "Products"
+                        new_doc.item_group = item.get("GroupCode") or "Products"
                         new_doc.stock_uom = "Nos"
                         # print(new_doc.__dict__)
                         new_doc.insert()

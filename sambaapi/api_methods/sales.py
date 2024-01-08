@@ -21,7 +21,7 @@ def get_samba_sales(start, end):
             
                     try:
                         new_doc = frappe.new_doc("Sales Invoice")
-                        new_doc.customer = get_sales_customer(key)
+                        new_doc.customer = get_sales_customer(key) or "POS Customer"
                         new_doc.custom_samba_id = key
                         new_doc.set_posting_time = 1
                         new_doc.custom_is_samba_sales = 1
