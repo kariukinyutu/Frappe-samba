@@ -19,9 +19,9 @@ class SambaInstanceConnectionSettings(Document):
                 get_menu_item_group()
                 get_menu_item()
                 get_customer_groups()
-                # create_pos_customer()
+                create_pos_customer()
                 # get_customer()
-                # get_sales_customer()
+                get_sales_customer()
                 # get_customer_contact()
                 self.connected = 1
                 
