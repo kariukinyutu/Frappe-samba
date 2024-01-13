@@ -172,6 +172,29 @@ def get_mop(pay_id):
         mop = mop_docs[0].get("mode_of_payment")
             
     return mop
+
+def get_payment_account(pay_id, payment_id, cheque_date):
+    payment_info = {}
+    mop = "Cash"
+    pay_type_id = str(pay_id)
+    mop_docs = frappe.db.get_all("Mode of Payment", filters={"custom_samba_id": pay_type_id}, fields=["mode_of_payment"])
     
+    if mop_docs:
+        mop = mop_docs[0].get("mode_of_payment")
+        
+        if mop in ["Cheque", "Credit Card", "Wire Transfer", "Bank Draft"]:
+            payment_info["paid_to"] = "1201 - Bank - MIR" #***********************************need change*************************************
+            payment_info["reference_no"] = payment_id
+            payment_info["reference_date"] = cheque_date
+        
+        elif mop in ["Mpesa"]:
+            payment_info["paid_to"] = "Mpesa - MIR" #***********************************need change*************************************
+            payment_info["reference_no"] = payment_id
+            payment_info["reference_date"] = cheque_date
+        
+        else:
+            payment_info["paid_to"] = "1110 - Cash - MIR" #***********************************need change*************************************
+                        
+
     
     
