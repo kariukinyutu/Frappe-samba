@@ -33,14 +33,16 @@ def get_samba_sales(start, end):
                             "charge_type": "On Net Total",
                             "account_head": "2301 - VAT - MIR",
                             "rate": 16,
-                            "description": "VAT"
+                            "description": "VAT",
+                            "included_in_print_rate": 1
                         })
                         
                         new_doc.append("taxes", {
                             "charge_type": "On Net Total",
                             "account_head": "2302 - CTL - MIR",
                             "rate": 2,
-                            "description": "CTL"
+                            "description": "CTL",
+                            "included_in_print_rate": 1
                         })
                         
                         
