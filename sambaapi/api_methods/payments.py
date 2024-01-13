@@ -58,6 +58,8 @@ def get_sales_payments(start_time, end_time):
                 
                 if ticket_id in ticket_id_list:
                     print(item.get("TicketId"))
+                    payment_info = get_payment_account(item.get("PaymentTypeId"), id, item.get("Date"))
+                    
                     doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
                     if not doc_exists:
                         try:
@@ -69,7 +71,9 @@ def get_sales_payments(start_time, end_time):
                             new_doc.custom_samba_id = item.get("Id")
                             new_doc.custom_samba_ticket_id = item.get("TicketId")
                             new_doc.party_type = "Customer"
-                            new_doc.paid_to = "Cash - S"
+                            new_doc.paid_to = payment_info.get("paid_to")
+                            new_doc.reference_no = payment_info.get("reference_no")
+                            new_doc.reference_date = payment_info.get("reference_date")
                             new_doc.paid_to_account_currency = "KES"
                             new_doc.party = get_invoice_customer(item.get("TicketId"))
                             new_doc.paid_amount = float(item.get("Amount"))
@@ -194,7 +198,8 @@ def get_payment_account(pay_id, payment_id, cheque_date):
         
         else:
             payment_info["paid_to"] = "1110 - Cash - MIR" #***********************************need change*************************************
-                        
+            payment_info["reference_no"] = ""
+            payment_info["reference_date"] = ""
 
-    
+    return payment_info
     
