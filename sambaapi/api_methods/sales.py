@@ -1,7 +1,6 @@
 import frappe
 import requests
 import traceback
-import json
 from datetime import datetime, date
 from sambaapi.api_methods.utils import get_samba_url
 
@@ -44,7 +43,6 @@ def get_samba_sales(start, end):
                             "description": "CTL",
                             "included_in_print_rate": 1
                         })
-                        
                         
                         for item_data in value:
                             new_doc.append("items",{

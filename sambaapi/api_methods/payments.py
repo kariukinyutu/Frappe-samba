@@ -31,6 +31,13 @@ def get_mode_of_payments():
                         new_doc.insert()
 
                         frappe.db.commit()
+                else:
+                    mop_doc = frappe.get_doc("Mode of Payment", item.get("Name"))
+                    if not mop_doc.custom_samba_id:
+                        mop_doc.custom_samba_id = item.get("Id")
+                        
+                        mop_doc.save()
+                        frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -183,18 +190,21 @@ def get_payment_account(pay_id, payment_id, cheque_date):
     pay_type_id = str(pay_id)
     mop_docs = frappe.db.get_all("Mode of Payment", filters={"custom_samba_id": pay_type_id}, fields=["mode_of_payment"])
     
+    dt = datetime.strptime(cheque_date, "%a, %d %b %Y %H:%M:%S %Z")
+    posting_date = dt.strftime("%Y-%#m-%#d")
+                
     if mop_docs:
         mop = mop_docs[0].get("mode_of_payment")
         
-        if mop in ["Cheque", "Credit Card", "Wire Transfer", "Bank Draft"]:
+        if mop in ["Cheque", "Credit Card", "Wire Transfer", "Bank Draft", "Visa"]:
             payment_info["paid_to"] = "1201 - Bank - MIR" #***********************************need change*************************************
             payment_info["reference_no"] = payment_id
-            payment_info["reference_date"] = cheque_date
+            payment_info["reference_date"] = posting_date
         
         elif mop in ["Mpesa"]:
             payment_info["paid_to"] = "Mpesa - MIR" #***********************************need change*************************************
             payment_info["reference_no"] = payment_id
-            payment_info["reference_date"] = cheque_date
+            payment_info["reference_date"] = posting_date
         
         else:
             payment_info["paid_to"] = "1110 - Cash - MIR" #***********************************need change*************************************
