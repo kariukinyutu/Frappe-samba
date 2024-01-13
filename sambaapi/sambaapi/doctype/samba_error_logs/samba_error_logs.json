@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "doc_type",
+  "samba_id",
   "error",
   "log_time"
  ],
@@ -31,11 +32,16 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Doctype"
+  },
+  {
+   "fieldname": "samba_id",
+   "fieldtype": "Data",
+   "label": "Samba ID"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2023-12-15 22:19:17.777853",
+ "modified": "2024-01-13 08:32:57.386131",
  "modified_by": "Administrator",
  "module": "Sambaapi",
  "name": "Samba Error Logs",

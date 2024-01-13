@@ -29,6 +29,17 @@ def get_samba_sales(start, end):
                         new_doc.posting_time = posting_time
                         new_doc.due_date = posting_date
                         new_doc.selling_price_list = "Standard Selling"
+                        new_doc.append("taxes", {
+                            "charge_type": "On Net Total",
+                            "account_head": "2301 - VAT - MIR",
+                            "rate": 16
+                        })
+                        
+                        new_doc.append("taxes", {
+                            "charge_type": "On Net Total",
+                            "account_head": "2302 - CTL - MIR",
+                            "rate": 2
+                        })
                         
                         
                         for item_data in value:
@@ -47,6 +58,7 @@ def get_samba_sales(start, end):
                         # print(traceback.format_exc())
                         new_doc = frappe.new_doc("Samba Error Logs")
                         new_doc.doc_type = "Sales Invoice"
+                        new_doc.samba_id = key
                         new_doc.error = traceback.format_exc()
                         new_doc.log_time = datetime.now()
                         new_doc.insert()
