@@ -5,10 +5,10 @@ from sambaapi.api_methods.utils import get_samba_url
 
 def get_customer_groups():
     url = get_samba_url()
-    
     try:
         response = requests.get(url + "/customerGroupSearch")
         data = response.json()
+    
         if len(data):
             for item in data:
                 doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": item.get("EntityName")})
