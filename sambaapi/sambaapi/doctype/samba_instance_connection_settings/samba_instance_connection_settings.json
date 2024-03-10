@@ -11,12 +11,18 @@
   "samba_connector_url",
   "connected",
   "connect",
+  "bank_account",
+  "mpesa_account",
+  "cash_account",
+  "column_break_vc0b",
   "sales_from_date",
   "sales_to_date",
   "get_sales",
   "payments_from_date",
   "payments_to_date",
-  "get_payments"
+  "get_payments",
+  "taxes_section",
+  "sales_taxes_and_charges"
  ],
  "fields": [
   {
@@ -70,12 +76,45 @@
    "fieldtype": "Link",
    "label": "Company",
    "options": "Company"
+  },
+  {
+   "fieldname": "bank_account",
+   "fieldtype": "Link",
+   "label": "Bank Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "mpesa_account",
+   "fieldtype": "Link",
+   "label": "Mpesa Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "cash_account",
+   "fieldtype": "Link",
+   "label": "Cash Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_vc0b",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "taxes_section",
+   "fieldtype": "Section Break",
+   "label": "Taxes"
+  },
+  {
+   "fieldname": "sales_taxes_and_charges",
+   "fieldtype": "Table",
+   "label": "Sales Taxes and Charges",
+   "options": "Sales Taxes and Charges"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2023-12-16 03:52:36.422232",
+ "modified": "2024-03-10 22:29:27.734352",
  "modified_by": "Administrator",
  "module": "Sambaapi",
  "name": "Samba Instance Connection Settings",

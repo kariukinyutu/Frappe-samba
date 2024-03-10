@@ -15,6 +15,7 @@ def get_warehouse():
                     try:
                         new_doc = frappe.new_doc("Warehouse")
                         new_doc.warehouse_name = item.get("Name")
+                        new_doc.custom_samba_id = item.get("Id")
                         new_doc.company = get_company()
                       
                         new_doc.insert()
@@ -29,7 +30,11 @@ def get_warehouse():
 
                         frappe.db.commit()
                 else:
-                    print("exists")#add logic for update
+                    warehouse_doc = frappe.get_doc("Warehouse", doc_exists)
+                    warehouse_doc.custom_samba_id = item.get("Id")
+                    
+                    warehouse_doc.save()
+                    frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -53,6 +58,7 @@ def get_menu_item_group():
                     try:
                         new_doc = frappe.new_doc("Item Group")
                         new_doc.item_group_name = item.get("GroupCode")
+                        new_doc.custom_samba_id = item.get("Id")
                         
                         new_doc.insert()
                         
@@ -60,13 +66,18 @@ def get_menu_item_group():
                     except:
                         new_doc = frappe.new_doc("Samba Error Logs")
                         new_doc.doc_type = "Item Group"
+                        new_doc.samba_id = item.get("Id")
                         new_doc.error = traceback.format_exc()
                         new_doc.log_time = datetime.now()
                         new_doc.insert()
 
                         frappe.db.commit()
                 else:
-                    print("exists")
+                    item_grp_doc = frappe.get_doc("Item Group", doc_exists)
+                    item_grp_doc.custom_samba_id = item.get("Id")
+                    
+                    item_grp_doc.save()
+                    frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -101,13 +112,18 @@ def get_menu_item():
                     except:
                         new_doc = frappe.new_doc("Samba Error Logs")
                         new_doc.doc_type = "Item"
+                        new_doc.samba_id = item.get("Id")
                         new_doc.error = traceback.format_exc()
                         new_doc.log_time = datetime.now()
                         new_doc.insert()
 
                         frappe.db.commit()
                 else:
-                    print("exists")
+                    item_doc = frappe.get_doc("Item", doc_exists)
+                    item_doc.custom_samba_id = item.get("Id")
+                    
+                    item_doc.save()
+                    frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"

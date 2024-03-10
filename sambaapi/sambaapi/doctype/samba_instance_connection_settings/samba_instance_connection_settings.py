@@ -18,11 +18,14 @@ class SambaInstanceConnectionSettings(Document):
                 get_warehouse()
                 get_menu_item_group()
                 get_menu_item()
+                create_default_customer_group()
                 get_customer_groups()
                 create_pos_customer()
-                # get_customer()
                 get_sales_customer()
-                # get_customer_contact()
+                
+                ##################################
+                # # get_customer()
+                # # get_customer_contact()
                 self.connected = 1
                 
             except:
@@ -66,7 +69,7 @@ def create_pos_customer():
             new_doc.customer_name = "POS Customer"
             new_doc.customer_type = "Company"
             new_doc.territory = "All Territories"
-            new_doc.customer_group = "All Customer Groups"
+            new_doc.customer_group = "Samba Customer"
             
             new_doc.insert()
             
@@ -74,6 +77,26 @@ def create_pos_customer():
         except:
             new_doc = frappe.new_doc("Samba Error Logs")
             new_doc.doc_type = "POS Customer"
+            new_doc.error = traceback.format_exc()
+            new_doc.log_time = datetime.now()
+            new_doc.insert()
+
+            frappe.db.commit()
+            
+def create_default_customer_group():
+    doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": "Samba Customer"})
+    if not doc_exists:
+        try:
+            new_doc = frappe.new_doc("Customer Group")
+            new_doc.customer_group_name = "Samba Customer"
+            new_doc.parent_customer_group = "All Customer Groups"
+            
+            new_doc.insert()
+            
+            frappe.db.commit()
+        except:
+            new_doc = frappe.new_doc("Samba Error Logs")
+            new_doc.doc_type = "Customer"
             new_doc.error = traceback.format_exc()
             new_doc.log_time = datetime.now()
             new_doc.insert()

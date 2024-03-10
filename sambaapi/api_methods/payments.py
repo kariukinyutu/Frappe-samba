@@ -26,6 +26,7 @@ def get_mode_of_payments():
                     except:
                         new_doc = frappe.new_doc("Samba Error Logs")
                         new_doc.doc_type = "Mode of Payment"
+                        new_doc.samba_id = item.get("Id")
                         new_doc.error = traceback.format_exc()
                         new_doc.log_time = datetime.now()
                         new_doc.insert()
@@ -53,18 +54,18 @@ def get_sales_payments(start_time, end_time):
     ticket_id_list = get_pending_tickets()
     
     try:
-        response = requests.get(url + "/paymentSearch?start=" + start_time + "&end=" + end_time)
+        response = requests.get(url + "/paymentSearch?start_datetime=" + start_time + "&end_datetime=" + end_time)
         data = response.json()
+
         if len(data):
             for item in data:
                 ticket_id = str(item.get("TicketId"))
                 id = str(item.get("Id"))
-                
-                dt = datetime.strptime(item.get("Date"), "%a, %d %b %Y %H:%M:%S %Z")
+            
+                dt = datetime.strptime(item.get("Date"), "%Y-%m-%dT%H:%M:%S.%fZ")
                 posting_date = dt.strftime("%Y-%#m-%#d")
-                
+            
                 if ticket_id in ticket_id_list:
-                    print(item.get("TicketId"))
                     payment_info = get_payment_account(item.get("PaymentTypeId"), id, item.get("Date"))
                     
                     doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
@@ -190,24 +191,26 @@ def get_payment_account(pay_id, payment_id, cheque_date):
     pay_type_id = str(pay_id)
     mop_docs = frappe.db.get_all("Mode of Payment", filters={"custom_samba_id": pay_type_id}, fields=["mode_of_payment"])
     
-    dt = datetime.strptime(cheque_date, "%a, %d %b %Y %H:%M:%S %Z")
+    dt = datetime.strptime(cheque_date, "%Y-%m-%dT%H:%M:%S.%fZ")
     posting_date = dt.strftime("%Y-%#m-%#d")
                 
     if mop_docs:
         mop = mop_docs[0].get("mode_of_payment")
         
+        settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
+        
         if mop in ["Cheque", "Credit Card", "Wire Transfer", "Bank Draft", "Visa"]:
-            payment_info["paid_to"] = "1201 - Bank - MIR" #***********************************need change*************************************
+            payment_info["paid_to"] = settings_doc.get("bank_account") #***********************************need change*************************************
             payment_info["reference_no"] = payment_id
             payment_info["reference_date"] = posting_date
         
         elif mop in ["Mpesa"]:
-            payment_info["paid_to"] = "Mpesa - MIR" #***********************************need change*************************************
+            payment_info["paid_to"] =  settings_doc.get("mpesa_account")#***********************************need change*************************************
             payment_info["reference_no"] = payment_id
             payment_info["reference_date"] = posting_date
         
         else:
-            payment_info["paid_to"] = "1110 - Cash - MIR" #***********************************need change*************************************
+            payment_info["paid_to"] = settings_doc.get("cash_account") #***********************************need change*************************************
             payment_info["reference_no"] = ""
             payment_info["reference_date"] = ""
 
