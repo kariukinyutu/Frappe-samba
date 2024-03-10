@@ -7,7 +7,7 @@ from sambaapi.api_methods.utils import get_samba_url
 
 def get_samba_sales(start, end):
     url = get_samba_url()
-    
+    settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
     try:
         response = requests.get(url + "/saleSearch?start_datetime=" + start + "&end_datetime=" + end )
         data = response.json()
@@ -24,6 +24,7 @@ def get_samba_sales(start, end):
                     try:
                         new_doc = frappe.new_doc("Sales Invoice")
                         new_doc.customer = "POS Customer"
+                        new_doc.company = settings_doc.get("company")
                         new_doc.custom_samba_id = key
                         new_doc.set_posting_time = 1
                         new_doc.custom_is_samba_sales = 1
