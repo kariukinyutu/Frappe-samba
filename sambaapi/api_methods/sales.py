@@ -6,20 +6,31 @@ from sambaapi.api_methods.utils import get_samba_url
 
 def get_samba_sales(start, end):
     url = get_samba_url()
+    # today = date.today()
+    # posting_date = today.strftime("%Y-%m-%d")
+    # posting_time = "00:00:00"
+    
     settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
     try:
         response = requests.get(url + "/saleSearch?start_datetime=" + start + "&end_datetime=" + end )
+    
         data = response.json()
 
         if data:
             for key, value in data.items():
+                # print(key)
                
                 doc_exists = frappe.db.exists("Sales Invoice", {"custom_samba_id": key})
         
                 if not doc_exists:
 
                     tax_items_list = get_tax_settings()
-                    posting_date, posting_time = get_posting_date(key, start, end)
+                    
+                    try:
+                        posting_date, posting_time = get_posting_date(key)
+                     
+                    except:
+                        print("failing")
                     
                     try:
                         new_doc = frappe.new_doc("Sales Invoice")
@@ -89,22 +100,29 @@ def get_sales_customer(ticket_id):
     
     return sales_customer
 
-def get_posting_date(key, start, end):
+def get_posting_date(key):
     url = get_samba_url()
+    
     posting_date = ""
     posting_time = ""
     
-    response = requests.get(url + "/ticketSearch?start_datetime=" + start + "&end_datetime=" + end)
+    response = requests.get(url + "/ticketSearch?ticket_id=" + key)
+    
     data = response.json()
 
     if data:
-        for item in data:
-            if str(item.get("Id")) == str(key): 
-                posting_time_and_date = item.get("Date")
-                dt = datetime.strptime(posting_time_and_date, "%Y-%m-%dT%H:%M:%S.%fZ")
-                posting_date = dt.strftime("%Y-%m-%d")
-                posting_time = dt.strftime("%H:%M:%S")
-               
+        try:
+            posting_time_and_date = data[0].get("Date")
+            print(posting_time_and_date)
+            dt = datetime.strptime(posting_time_and_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+            posting_date = dt.strftime("%Y-%m-%d")
+            posting_time = dt.strftime("%H:%M:%S")
+        except:
+            today = date.today()
+            posting_date = today.strftime("%Y-%m-%d")
+            posting_time = "00:00:00"
+            
+    # print(posting_date, posting_time)   
     return posting_date, posting_time
 
 def get_tax_settings():
