@@ -11,6 +11,10 @@
   "samba_connector_url",
   "connected",
   "connect",
+  "add_room_customers",
+  "from_date",
+  "entity_type_id",
+  "get_room_customers",
   "bank_account",
   "mpesa_account",
   "cash_account",
@@ -109,12 +113,33 @@
    "fieldtype": "Table",
    "label": "Sales Taxes and Charges",
    "options": "Sales Taxes and Charges"
+  },
+  {
+   "default": "0",
+   "fieldname": "add_room_customers",
+   "fieldtype": "Check",
+   "label": "Add Room Customers"
+  },
+  {
+   "fieldname": "entity_type_id",
+   "fieldtype": "Data",
+   "label": "Entity Type Id"
+  },
+  {
+   "fieldname": "get_room_customers",
+   "fieldtype": "Button",
+   "label": "Get Room Customers"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-03-10 22:29:27.734352",
+ "modified": "2024-03-29 17:36:50.087102",
  "modified_by": "Administrator",
  "module": "Sambaapi",
  "name": "Samba Instance Connection Settings",

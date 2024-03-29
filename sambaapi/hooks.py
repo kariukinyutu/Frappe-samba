@@ -132,7 +132,13 @@ app_license = "mit"
 
 # Scheduled Tasks
 # ---------------
-
+scheduler_events = {
+	"cron":{
+        "0 * * * *":[
+			"sambaapi.tasks.every_hour.get_sales"
+		],
+	}
+}
 # scheduler_events = {
 #	"all": [
 #		"sambaapi.tasks.all"

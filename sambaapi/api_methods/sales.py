@@ -4,26 +4,31 @@ import traceback
 from datetime import datetime, date
 from sambaapi.api_methods.utils import get_samba_url
 
-
 def get_samba_sales(start, end):
     url = get_samba_url()
     settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
     try:
         response = requests.get(url + "/saleSearch?start_datetime=" + start + "&end_datetime=" + end )
         data = response.json()
+
         if data:
             for key, value in data.items():
                
                 doc_exists = frappe.db.exists("Sales Invoice", {"custom_samba_id": key})
-                # print("*"*80)
-                # print(data)
+        
                 if not doc_exists:
+
                     tax_items_list = get_tax_settings()
                     posting_date, posting_time = get_posting_date(key, start, end)
                     
                     try:
                         new_doc = frappe.new_doc("Sales Invoice")
-                        new_doc.customer = "POS Customer"
+                        try:
+                            ticket_customer = get_sales_customer(key)
+                            new_doc.customer = ticket_customer 
+                        except:
+                            new_doc.customer = "POS Customer"
+                            
                         new_doc.company = settings_doc.get("company")
                         new_doc.custom_samba_id = key
                         new_doc.set_posting_time = 1
@@ -64,7 +69,7 @@ def get_samba_sales(start, end):
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
-        new_doc.error = "Connection Error"
+        new_doc.error = traceback.format_exc()
         new_doc.log_time = datetime.now()
         new_doc.insert()
 
@@ -75,18 +80,14 @@ def get_sales_customer(ticket_id):
     
     url = get_samba_url()
     
-    response = requests.get(url + "/saleCustomerSearch")
+    response = requests.get(url + "/saleCustomerSearch?invoice_id=" + ticket_id)
     data = response.json()
     
-    if data:
-        for item in data:
-            if str(item.get("Ticket_Id")) == str(ticket_id):
-                
-                sales_customer = item.get("EntityName")
+    if data:          
+        sales_customer = data[0].get("EntityName")
 
     
     return sales_customer
-
 
 def get_posting_date(key, start, end):
     url = get_samba_url()

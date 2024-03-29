@@ -21,29 +21,54 @@ class SambaInstanceConnectionSettings(Document):
                 create_default_customer_group()
                 get_customer_groups()
                 create_pos_customer()
-                get_sales_customer()
-                
-                ##################################
-                # # get_customer()
-                # # get_customer_contact()
+        
                 self.connected = 1
                 
             except:
                 frappe.throw("Something went wrong")
+    
+    @frappe.whitelist()     
+    def get_room_customers(self):
+        from_datetime = "2024-01-01 00:00:00"
+        start_time = datetime.min.time()
+        
+        if self.add_room_customers == 1:
+            
+            if not self.entity_type_id:
+                frappe.throw("Entity Type Id Is Mandatory!")
+            try:
+                
+                start_day = datetime.strptime(self.from_date, "%Y-%m-%d")
+                datetime_obj = datetime.combine(start_day, start_time)
+
+                from_datetime = datetime.strftime(datetime_obj, "%Y-%m-%d %H:%M:%S")
+            
+            except:
+                datetime_obj2 = datetime.combine(self.from_date, start_time)
+                from_datetime = datetime.strftime(datetime_obj2, "%Y-%m-%d %H:%M:%S")
+                            
+            get_customer(self.entity_type_id, from_datetime)
+        
                 
     @frappe.whitelist()
     def get_sales(self):
         start_datetime = self.sales_from_date
         end_datetime = self.sales_to_date
-        start_str = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
-        str_start = datetime.strftime(start_str, "%Y-%m-%dT%H:%M:%S")
-        end_str = datetime.strptime(end_datetime, "%Y-%m-%d %H:%M:%S")
-        str_end = datetime.strftime(end_str, "%Y-%m-%dT%H:%M:%S")
+        str_start = ""
+        str_end = ""
         
-        print(str_start, str_end)
+        try:
+            start_str = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M:%S")
+            str_start = datetime.strftime(start_str, "%Y-%m-%d %H:%M:%S")
+            end_str = datetime.strptime(end_datetime, "%Y-%m-%d %H:%M:%S")
+            str_end = datetime.strftime(end_str, "%Y-%m-%d %H:%M:%S")
+        except:
+            str_start = datetime.strftime(start_datetime, "%Y-%m-%d %H:%M:%S")
+            str_end = datetime.strftime(end_datetime, "%Y-%m-%d %H:%M:%S")
+        
         if self.sales_from_date and self.sales_to_date:
             try:
-                get_samba_sales(start_datetime, end_datetime)
+                get_samba_sales(str_start, str_end)
                 
             except:
                 frappe.throw("Something went wrong")
