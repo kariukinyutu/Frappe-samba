@@ -34,12 +34,8 @@ def get_samba_sales(start, end):
                     
                     try:
                         new_doc = frappe.new_doc("Sales Invoice")
-                        try:
-                            ticket_customer = get_sales_customer(key)
-                            new_doc.customer = ticket_customer 
-                        except:
-                            new_doc.customer = "POS Customer"
-                            
+                        ticket_customer = get_sales_customer(key)
+                        new_doc.customer = ticket_customer
                         new_doc.company = settings_doc.get("company")
                         new_doc.custom_samba_id = key
                         new_doc.set_posting_time = 1
@@ -92,13 +88,47 @@ def get_sales_customer(ticket_id):
     url = get_samba_url()
     
     response = requests.get(url + "/saleCustomerSearch?invoice_id=" + ticket_id)
-    data = response.json()
-    
-    if data:          
-        sales_customer = data[0].get("EntityName")
-
-    
+     
+    try:
+        data = response.json()
+        
+        if not data:
+            sales_customer = "POS Customer"
+            
+        doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
+        if doc_exists:
+            sales_customer = data[0].get("EntityName")
+        else:
+            sales_customer = create_missing_sales_customer(data)   
+    except:
+        sales_customer = "POS Customer"
+            
     return sales_customer
+
+def create_missing_sales_customer(data):
+    if not data[0].get("EntityName") in ["Customer", "Customers"]:
+        try:
+            new_doc = frappe.new_doc("Customer")
+            new_doc.customer_name = data[0].get("EntityName")
+            new_doc.customer_type = "Individual"
+            new_doc.custom_samba_id = data[0].get("EntityId")
+            new_doc.territory = "All Territories"
+            new_doc.customer_group = "Samba Customer"
+            
+            new_doc.insert()
+            
+            frappe.db.commit()
+        except:
+            new_doc = frappe.new_doc("Samba Error Logs")
+            new_doc.doc_type = "Customer"
+            new_doc.samba_id = data[0].get("EntityId")
+            new_doc.error = traceback.format_exc()
+            new_doc.log_time = datetime.now()
+            new_doc.insert()
+
+            frappe.db.commit()
+        
+        return data[0].get("EntityName")
 
 def get_posting_date(key):
     url = get_samba_url()

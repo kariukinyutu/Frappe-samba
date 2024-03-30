@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from datetime import datetime
 
 from sambaapi.api_methods.stock import get_warehouse, get_menu_item_group, get_menu_item
-from sambaapi.api_methods.customer import get_customer_groups, get_customer, get_sales_customer, get_customer_contact
+from sambaapi.api_methods.customer import get_customer_groups, get_customer,  get_customer_contact
 from sambaapi.api_methods.sales import get_samba_sales
 from sambaapi.api_methods.payments import get_mode_of_payments, get_sales_payments
 

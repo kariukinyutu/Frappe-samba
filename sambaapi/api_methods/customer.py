@@ -85,53 +85,6 @@ def get_customer(customer_type_id, start_from):
 
         frappe.db.commit()
         
-def get_sales_customer():
-    url = get_samba_url()
-    
-    try:
-        response = requests.get(url + "/saleCustomerSearch")
-        data = response.json()
-        
-        if len(data):
-            for item in data:
-                doc_exists = frappe.db.exists("Customer", {"customer_name": item.get("EntityName")})
-                if not doc_exists:
-                    if not item.get("EntityName") in ["Customer", "Customers"]:
-                        try:
-                            new_doc = frappe.new_doc("Customer")
-                            new_doc.customer_name = item.get("EntityName")
-                            new_doc.customer_type = "Company"
-                            new_doc.custom_samba_id = item.get("EntityId")
-                            new_doc.territory = "All Territories"
-                            new_doc.customer_group = get_group_for_customer(item.get("EntityTypeId")) or "Samba Customer"
-                            
-                            new_doc.insert()
-                            
-                            frappe.db.commit()
-                        except:
-                            new_doc = frappe.new_doc("Samba Error Logs")
-                            new_doc.doc_type = "Customer"
-                            new_doc.samba_id = item.get("EntityId")
-                            new_doc.error = traceback.format_exc()
-                            new_doc.log_time = datetime.now()
-                            new_doc.insert()
-
-                            frappe.db.commit()
-                else:
-                    cust_doc = frappe.get_doc("Customer", doc_exists)
-                    cust_doc.custom_samba_id = item.get("EntityId")
-                    
-                    cust_doc.save()
-                    frappe.db.commit()
-    except:
-        new_doc = frappe.new_doc("Samba Error Logs")
-        new_doc.doc_type = "Customer"
-        new_doc.error = traceback.format_exc()
-        new_doc.log_time = datetime.now()
-        new_doc.insert()
-
-        frappe.db.commit()
-        
 def get_customer_contact():
     url = get_samba_url()
     
