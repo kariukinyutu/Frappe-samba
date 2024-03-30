@@ -18,7 +18,7 @@ def get_samba_sales(start, end):
 
         if data:
             for key, value in data.items():
-                # print(key)
+                add_missing_items(value)
                
                 doc_exists = frappe.db.exists("Sales Invoice", {"custom_samba_id": key})
         
@@ -129,6 +129,31 @@ def create_missing_sales_customer(data):
             frappe.db.commit()
         
         return data[0].get("EntityName")
+
+def add_missing_items(value):
+    for item in value:
+        doc_exists = frappe.db.exists("Item", {"item_code": item.get("item_code")})
+        
+        if not doc_exists:
+            try:
+                new_doc = frappe.new_doc("Item")
+                new_doc.item_code = item.get("item_code")
+                new_doc.item_name = item.get("item_code")
+                new_doc.item_group = "Products"
+                new_doc.stock_uom = "Nos"
+                # print(new_doc.__dict__)
+                new_doc.insert()
+                
+                frappe.db.commit()
+            except:
+                new_doc = frappe.new_doc("Samba Error Logs")
+                new_doc.doc_type = "Item"
+                new_doc.samba_id = item.get("Id")
+                new_doc.error = traceback.format_exc()
+                new_doc.log_time = datetime.now()
+                new_doc.insert()
+
+                frappe.db.commit()
 
 def get_posting_date(key):
     url = get_samba_url()
