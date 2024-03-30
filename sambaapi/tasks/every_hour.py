@@ -8,7 +8,6 @@ from sambaapi.api_methods.payments import get_mode_of_payments, get_sales_paymen
 
 def get_sales():
     start_of_day = datetime.combine(datetime.now().date(), time(00, 00, 00))
-    start_of_day = start_of_day - timedelta(days=340)
     start_of_daytime = datetime.combine(start_of_day,  time(00, 00, 00))
     end_of_day = start_of_day + timedelta(days=1)
     
