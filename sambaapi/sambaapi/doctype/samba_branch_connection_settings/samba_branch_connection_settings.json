@@ -1,13 +1,15 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2023-12-09 10:36:44.352277",
+ "autoname": "format:{company}-{branch}",
+ "creation": "2025-01-15 19:46:50.883179",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "company",
+  "branch",
   "samba_connector_url",
   "connected",
   "connect",
@@ -31,9 +33,12 @@
  ],
  "fields": [
   {
-   "fieldname": "connect",
-   "fieldtype": "Button",
-   "label": "Connect"
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   },
   {
    "fieldname": "samba_connector_url",
@@ -47,40 +52,30 @@
    "label": "Connected"
   },
   {
-   "fieldname": "get_sales",
+   "fieldname": "connect",
    "fieldtype": "Button",
-   "label": "Get Sales"
+   "label": "Connect"
   },
   {
-   "fieldname": "get_payments",
+   "default": "0",
+   "fieldname": "add_room_customers",
+   "fieldtype": "Check",
+   "label": "Add Room Customers"
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date"
+  },
+  {
+   "fieldname": "entity_type_id",
+   "fieldtype": "Data",
+   "label": "Entity Type Id"
+  },
+  {
+   "fieldname": "get_room_customers",
    "fieldtype": "Button",
-   "label": "Get Payments"
-  },
-  {
-   "fieldname": "sales_from_date",
-   "fieldtype": "Datetime",
-   "label": "Sales From Date"
-  },
-  {
-   "fieldname": "payments_from_date",
-   "fieldtype": "Datetime",
-   "label": "Payments From Date"
-  },
-  {
-   "fieldname": "sales_to_date",
-   "fieldtype": "Datetime",
-   "label": "Sales To Date"
-  },
-  {
-   "fieldname": "payments_to_date",
-   "fieldtype": "Datetime",
-   "label": "Payments To Date"
-  },
-  {
-   "fieldname": "company",
-   "fieldtype": "Link",
-   "label": "Company",
-   "options": "Company"
+   "label": "Get Room Customers"
   },
   {
    "fieldname": "bank_account",
@@ -105,6 +100,41 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "sales_from_date",
+   "fieldtype": "Datetime",
+   "label": "Sales From Date"
+  },
+  {
+   "fieldname": "sales_to_date",
+   "fieldtype": "Datetime",
+   "label": "Sales To Date"
+  },
+  {
+   "fieldname": "get_sales",
+   "fieldtype": "Button",
+   "label": "Get Sales"
+  },
+  {
+   "fieldname": "payments_from_date",
+   "fieldtype": "Datetime",
+   "label": "Payments From Date"
+  },
+  {
+   "fieldname": "payments_to_date",
+   "fieldtype": "Datetime",
+   "label": "Payments To Date"
+  },
+  {
+   "fieldname": "get_payments",
+   "fieldtype": "Button",
+   "label": "Get Payments"
+  },
+  {
+   "fieldname": "customer_group_skip_list",
+   "fieldtype": "Code",
+   "label": "Customer Group Skip List"
+  },
+  {
    "fieldname": "taxes_section",
    "fieldtype": "Section Break",
    "label": "Taxes"
@@ -116,39 +146,21 @@
    "options": "Sales Taxes and Charges"
   },
   {
-   "default": "0",
-   "fieldname": "add_room_customers",
-   "fieldtype": "Check",
-   "label": "Add Room Customers"
-  },
-  {
-   "fieldname": "entity_type_id",
-   "fieldtype": "Data",
-   "label": "Entity Type Id"
-  },
-  {
-   "fieldname": "get_room_customers",
-   "fieldtype": "Button",
-   "label": "Get Room Customers"
-  },
-  {
-   "fieldname": "from_date",
-   "fieldtype": "Date",
-   "label": "From Date"
-  },
-  {
-   "fieldname": "customer_group_skip_list",
-   "fieldtype": "Code",
-   "label": "Customer Group Skip List"
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Branch",
+   "options": "Branch",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
- "issingle": 1,
  "links": [],
- "modified": "2025-01-15 19:43:49.129886",
+ "modified": "2025-01-15 19:54:49.448635",
  "modified_by": "Administrator",
  "module": "Sambaapi",
- "name": "Samba Instance Connection Settings",
+ "name": "Samba Branch Connection Settings",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

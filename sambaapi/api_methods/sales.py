@@ -6,11 +6,8 @@ from sambaapi.api_methods.utils import get_samba_url
 
 def get_samba_sales(start, end):
     url = get_samba_url()
-    # today = date.today()
-    # posting_date = today.strftime("%Y-%m-%d")
-    # posting_time = "00:00:00"
     
-    settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
+    settings_doc = frappe.get_doc("Samba Branch Connection Settings", "Samba001-Soulbreeze Restaurant")
     try:
         response = requests.get(url + "/saleSearch?start_datetime=" + start + "&end_datetime=" + end )
     
@@ -37,6 +34,7 @@ def get_samba_sales(start, end):
                         ticket_customer = get_sales_customer(key)
                         new_doc.customer = ticket_customer
                         new_doc.company = settings_doc.get("company")
+                        new_doc.branch = settings_doc.get("branch")
                         new_doc.custom_samba_id = key
                         new_doc.set_posting_time = 1
                         new_doc.custom_is_samba_sales = 1
@@ -56,13 +54,11 @@ def get_samba_sales(start, end):
                                 "qty": item_data.get("qty"),
                                 "rate": item_data.get("rate")
                             })
-                        # print(new_doc.__dict__)
                         new_doc.insert()
                         new_doc.submit()
                         
                         frappe.db.commit()
                     except:
-                        # print(traceback.format_exc())
                         new_doc = frappe.new_doc("Samba Error Logs")
                         new_doc.doc_type = "Sales Invoice"
                         new_doc.samba_id = key
@@ -84,22 +80,24 @@ def get_samba_sales(start, end):
 
 def get_sales_customer(ticket_id):
     sales_customer = "POS Customer"
-    
+    settings_doc = frappe.get_doc("Samba Branch Connection Settings", "Samba001-Soulbreeze Restaurant")
+    skip_list = settings_doc.get("customer_group_skip_list")
     url = get_samba_url()
     
     response = requests.get(url + "/saleCustomerSearch?invoice_id=" + ticket_id)
-     
     try:
         data = response.json()
         
         if not data:
             sales_customer = "POS Customer"
-            
-        doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
-        if doc_exists:
-            sales_customer = data[0].get("EntityName")
-        else:
-            sales_customer = create_missing_sales_customer(data)   
+        # print(skip_list, data[0].get("EntityTypeId"), ticket_id, data[0].get("EntityName"))
+        
+        if not data[0].get("EntityTypeId") in skip_list:
+            doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
+            if doc_exists:
+                sales_customer = data[0].get("EntityName")
+            else:
+                sales_customer = create_missing_sales_customer(data)   
     except:
         sales_customer = "POS Customer"
             
@@ -141,7 +139,6 @@ def add_missing_items(value):
                 new_doc.item_name = item.get("item_code")
                 new_doc.item_group = "Products"
                 new_doc.stock_uom = "Nos"
-                # print(new_doc.__dict__)
                 new_doc.insert()
                 
                 frappe.db.commit()
@@ -168,7 +165,6 @@ def get_posting_date(key):
     if data:
         try:
             posting_time_and_date = data[0].get("Date")
-            print(posting_time_and_date)
             dt = datetime.strptime(posting_time_and_date, "%Y-%m-%dT%H:%M:%S.%fZ")
             posting_date = dt.strftime("%Y-%m-%d")
             posting_time = dt.strftime("%H:%M:%S")
@@ -177,7 +173,6 @@ def get_posting_date(key):
             posting_date = today.strftime("%Y-%m-%d")
             posting_time = "00:00:00"
             
-    # print(posting_date, posting_time)   
     return posting_date, posting_time
 
 def get_tax_settings():

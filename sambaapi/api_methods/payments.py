@@ -13,7 +13,6 @@ def get_mode_of_payments():
         data = response.json()
         if len(data):
             for item in data:
-                # print(item.get("Name"), item.get("Id"))
                 doc_exists = frappe.db.exists("Mode of Payment", {"mode_of_payment": item.get("Name")})
                 if not doc_exists:
                     try:
@@ -88,7 +87,6 @@ def get_sales_payments(start_time, end_time):
                             new_doc.received_amount = float(item.get("Amount"))
                             new_doc.target_exchange_rate = 1
                             # new_doc.docstatus = 1
-                            # print(new_doc.__dict__)
                             new_doc.insert()
                             frappe_doc = frappe.get_doc("Payment Entry", new_doc.name)
                             

@@ -38,7 +38,7 @@ def get_payments():
         frappe.enqueue(get_sales_payments, queue = 'long', is_async=True, start_time = str_start, end_time = str_end)
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
-        new_doc.doc_type = "    Payment Entry Cron"
+        new_doc.doc_type = "Payment Entry Cron"
         new_doc.error = traceback.format_exc()
         new_doc.log_time = datetime.now()
         new_doc.insert()

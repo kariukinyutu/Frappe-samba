@@ -53,31 +53,32 @@ def get_menu_item_group():
         data = response.json()
         if len(data):
             for item in data:
-                doc_exists = frappe.db.exists("Item Group", {"item_group_name": item.get("GroupCode")})
-                if not doc_exists:
-                    try:
-                        new_doc = frappe.new_doc("Item Group")
-                        new_doc.item_group_name = item.get("GroupCode")
-                        new_doc.custom_samba_id = item.get("Id")
-                        
-                        new_doc.insert()
-                        
-                        frappe.db.commit()
-                    except:
-                        new_doc = frappe.new_doc("Samba Error Logs")
-                        new_doc.doc_type = "Item Group"
-                        new_doc.samba_id = item.get("Id")
-                        new_doc.error = traceback.format_exc()
-                        new_doc.log_time = datetime.now()
-                        new_doc.insert()
+                if item.get("GroupCode"):
+                    doc_exists = frappe.db.exists("Item Group", {"item_group_name": item.get("GroupCode")})
+                    if not doc_exists:
+                        try:
+                            new_doc = frappe.new_doc("Item Group")
+                            new_doc.item_group_name = item.get("GroupCode")
+                            new_doc.custom_samba_id = item.get("Id")
+                            
+                            new_doc.insert()
+                            
+                            frappe.db.commit()
+                        except:
+                            new_doc = frappe.new_doc("Samba Error Logs")
+                            new_doc.doc_type = "Item Group"
+                            new_doc.samba_id = item.get("Id")
+                            new_doc.error = traceback.format_exc()
+                            new_doc.log_time = datetime.now()
+                            new_doc.insert()
 
+                            frappe.db.commit()
+                    else:
+                        item_grp_doc = frappe.get_doc("Item Group", doc_exists)
+                        item_grp_doc.custom_samba_id = item.get("Id")
+                        
+                        item_grp_doc.save()
                         frappe.db.commit()
-                else:
-                    item_grp_doc = frappe.get_doc("Item Group", doc_exists)
-                    item_grp_doc.custom_samba_id = item.get("Id")
-                    
-                    item_grp_doc.save()
-                    frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -105,7 +106,6 @@ def get_menu_item():
                         new_doc.custom_samba_id = item.get("Id")
                         new_doc.item_group = item.get("GroupCode") or "Products"
                         new_doc.stock_uom = "Nos"
-                        # print(new_doc.__dict__)
                         new_doc.insert()
                         
                         frappe.db.commit()
