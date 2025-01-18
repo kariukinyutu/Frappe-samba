@@ -16,6 +16,7 @@ class SambaBranchConnectionSettings(Document):
         if self.samba_connector_url:
             try:
                 get_warehouse()
+                create_default_item_group()
                 get_menu_item_group()
                 get_menu_item()
                 create_default_customer_group()
@@ -121,9 +122,29 @@ def create_default_customer_group():
             frappe.db.commit()
         except:
             new_doc = frappe.new_doc("Samba Error Logs")
-            new_doc.doc_type = "Customer"
+            new_doc.doc_type = "Customer Group"
             new_doc.error = traceback.format_exc()
             new_doc.log_time = datetime.now()
             new_doc.insert()
 
             frappe.db.commit()
+            
+def create_default_item_group():
+    doc_exists = frappe.db.exists("Item Group", {"item_group_name": "Products"})
+    if not doc_exists:
+        try:
+            new_doc = frappe.new_doc("Item Group")
+            new_doc.item_group_name = "Products"
+            
+            new_doc.insert()
+            
+            frappe.db.commit()
+        except:
+            new_doc = frappe.new_doc("Samba Error Logs")
+            new_doc.doc_type = "Item Group"
+            new_doc.error = traceback.format_exc()
+            new_doc.log_time = datetime.now()
+            new_doc.insert()
+
+            frappe.db.commit()
+            

@@ -105,7 +105,7 @@ def get_menu_item():
                         new_doc.item_name = item.get("Name")
                         new_doc.custom_samba_id = item.get("Id")
                         new_doc.item_group = item.get("GroupCode") or "Products"
-                        new_doc.stock_uom = "Nos"
+                        # new_doc.stock_uom = "Nos"
                         new_doc.insert()
                         
                         frappe.db.commit()

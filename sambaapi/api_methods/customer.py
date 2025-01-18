@@ -5,8 +5,6 @@ from sambaapi.api_methods.utils import get_samba_url
 
 def get_customer_groups():
     url = get_samba_url()
-    settings_doc = frappe.get_doc("Samba Branch Connection Settings", "Samba001-Soulbreeze Restaurant")
-    skip_list = settings_doc.get("customer_group_skip_list")
     
     try:
         response = requests.get(url + "/customerGroupSearch")
@@ -14,33 +12,34 @@ def get_customer_groups():
     
         if len(data):
             for item in data:
-                if not item.get("Id") in skip_list:
-                    doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": item.get("EntityName")})
-                    if not doc_exists:
-                        if not item.get("EntityName") in ["Customer", "Customers"]:
-                            try:
-                                new_doc = frappe.new_doc("Customer Group")
-                                new_doc.customer_group_name = item.get("EntityName")
-                                new_doc.custom_samba_id = item.get("Id")
-                                new_doc.parent_customer_group = "All Customer Groups"
-                                new_doc.insert()
-                                
-                                frappe.db.commit()
-                            except:
-                                new_doc = frappe.new_doc("Samba Error Logs")
-                                new_doc.doc_type = "Customer Group"
-                                new_doc.samba_id = item.get("Id")
-                                new_doc.error = traceback.format_exc()
-                                new_doc.log_time = datetime.now()
-                                new_doc.insert()
+                doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": item.get("EntityName")})
+                if item.get("EntityName") in ["Customer", "Customers"]:
+                    item["EntityName"] = "Walkin Customer"
+                if not doc_exists:
+                    if not item.get("EntityName") in ["Customer", "Customers"]:
+                        try:
+                            new_doc = frappe.new_doc("Customer Group")
+                            new_doc.customer_group_name = item.get("EntityName")
+                            new_doc.custom_samba_id = item.get("Id")
+                            new_doc.parent_customer_group = "All Customer Groups"
+                            new_doc.insert()
+                            
+                            frappe.db.commit()
+                        except:
+                            new_doc = frappe.new_doc("Samba Error Logs")
+                            new_doc.doc_type = "Customer Group"
+                            new_doc.samba_id = item.get("Id")
+                            new_doc.error = traceback.format_exc()
+                            new_doc.log_time = datetime.now()
+                            new_doc.insert()
 
-                                frappe.db.commit()
-                    else:
-                        cust_group_doc = frappe.get_doc("Customer Group", doc_exists)
-                        cust_group_doc.custom_samba_id = item.get("Id")
-                        
-                        cust_group_doc.save()
-                        frappe.db.commit()
+                            frappe.db.commit()
+                else:
+                    cust_group_doc = frappe.get_doc("Customer Group", doc_exists)
+                    cust_group_doc.custom_samba_id = item.get("Id")
+                    
+                    cust_group_doc.save()
+                    frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"

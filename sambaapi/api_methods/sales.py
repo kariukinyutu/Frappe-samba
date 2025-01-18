@@ -1,4 +1,5 @@
 import frappe
+import ast
 import requests
 import traceback
 from datetime import datetime, date
@@ -52,7 +53,7 @@ def get_samba_sales(start, end):
                                 "item_code": item_data.get("item_code"), 
                                 "item_name": item_data.get("item_code"),
                                 "qty": item_data.get("qty"),
-                                "rate": item_data.get("rate")
+                                "rate": item_data.get("rate") or 0
                             })
                         new_doc.insert()
                         new_doc.submit()
@@ -81,7 +82,7 @@ def get_samba_sales(start, end):
 def get_sales_customer(ticket_id):
     sales_customer = "POS Customer"
     settings_doc = frappe.get_doc("Samba Branch Connection Settings", "Samba001-Soulbreeze Restaurant")
-    skip_list = settings_doc.get("customer_group_skip_list")
+    skip_list = ast.literal_eval(settings_doc.get("customer_group_skip_list"))
     url = get_samba_url()
     
     response = requests.get(url + "/saleCustomerSearch?invoice_id=" + ticket_id)
@@ -90,7 +91,6 @@ def get_sales_customer(ticket_id):
         
         if not data:
             sales_customer = "POS Customer"
-        # print(skip_list, data[0].get("EntityTypeId"), ticket_id, data[0].get("EntityName"))
         
         if not data[0].get("EntityTypeId") in skip_list:
             doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
