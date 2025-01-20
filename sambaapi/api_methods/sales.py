@@ -88,16 +88,19 @@ def get_sales_customer(ticket_id):
     response = requests.get(url + "/saleCustomerSearch?invoice_id=" + ticket_id)
     try:
         data = response.json()
-        
+
         if not data:
             sales_customer = "POS Customer"
-        
-        if not data[0].get("EntityTypeId") in skip_list:
-            doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
-            if doc_exists:
-                sales_customer = data[0].get("EntityName")
-            else:
-                sales_customer = create_missing_sales_customer(data)   
+
+        for e_data in data:
+            if e_data.get("EntityTypeId") in skip_list:
+                data.remove(e_data)
+
+                doc_exists = frappe.db.exists("Customer", {"customer_name": data[0].get("EntityName")})
+                if doc_exists:
+                    sales_customer = data[0].get("EntityName")
+                else:
+                    sales_customer = create_missing_sales_customer(data)   
     except:
         sales_customer = "POS Customer"
             
