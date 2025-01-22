@@ -11,16 +11,18 @@ from sambaapi.api_methods.sales import get_samba_sales
 from sambaapi.api_methods.payments import get_mode_of_payments, get_sales_payments
 
 class SambaBranchConnectionSettings(Document):
+    
     @frappe.whitelist()
     def setup_erpnext(self):
         if self.samba_connector_url:
+            url = self.samba_connector_url
             try:
-                get_warehouse()
+                get_warehouse(url)
                 create_default_item_group()
-                get_menu_item_group()
-                get_menu_item()
+                get_menu_item_group(url)
+                get_menu_item(url)
                 create_default_customer_group()
-                get_customer_groups()
+                get_customer_groups(url)
                 create_pos_customer()
         
                 self.connected = 1
@@ -48,7 +50,7 @@ class SambaBranchConnectionSettings(Document):
                 datetime_obj2 = datetime.combine(self.from_date, start_time)
                 from_datetime = datetime.strftime(datetime_obj2, "%Y-%m-%d %H:%M:%S")
                             
-            get_customer(self.entity_type_id, from_datetime)
+            get_customer(self.entity_type_id, from_datetime, self.samba_connector_url)
         
                 
     @frappe.whitelist()
@@ -69,7 +71,7 @@ class SambaBranchConnectionSettings(Document):
         
         if self.sales_from_date and self.sales_to_date:
             try:
-                get_samba_sales(str_start, str_end)
+                get_samba_sales(str_start, str_end, self.samba_connector_url)
                 
             except:
                 frappe.throw("Something went wrong")
@@ -81,8 +83,8 @@ class SambaBranchConnectionSettings(Document):
         end_datetime = self.payments_to_date
         if self.payments_from_date and self.payments_to_date:
             try:
-                get_mode_of_payments()
-                get_sales_payments(start_datetime, end_datetime)
+                get_mode_of_payments(self.samba_connector_url)
+                get_sales_payments(start_datetime, end_datetime, self.samba_connector_url)
                 
             except:
                 frappe.throw("Something went wrong")            

@@ -1,10 +1,7 @@
 import frappe, requests, traceback, json
 from datetime import datetime
-from sambaapi.api_methods.utils import get_samba_url
 
-
-def get_customer_groups():
-    url = get_samba_url()
+def get_customer_groups(url):
     
     try:
         response = requests.get(url + "/customerGroupSearch")
@@ -12,16 +9,18 @@ def get_customer_groups():
     
         if len(data):
             for item in data:
-                doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": item.get("EntityName")})
                 if item.get("EntityName") in ["Customer", "Customers"]:
                     item["EntityName"] = "Walkin Customer"
+                    
+                doc_exists = frappe.db.exists("Customer Group", {"customer_group_name": item.get("EntityName")})
+                    
                 if not doc_exists:
                     if not item.get("EntityName") in ["Customer", "Customers"]:
                         try:
                             new_doc = frappe.new_doc("Customer Group")
                             new_doc.customer_group_name = item.get("EntityName")
                             new_doc.custom_samba_id = item.get("Id")
-                            new_doc.parent_customer_group = "All Customer Groups"
+                            # new_doc.parent_customer_group = "All Customer Groups"
                             new_doc.insert()
                             
                             frappe.db.commit()
@@ -49,8 +48,7 @@ def get_customer_groups():
 
         frappe.db.commit()
 
-def get_customer(customer_type_id, start_from):
-    url = get_samba_url()
+def get_customer(customer_type_id, start_from, url):
 
     try:
         response = requests.get(url + "/customerSearch?entity_typeid=" + customer_type_id + "&from_time=" + start_from)
@@ -88,8 +86,7 @@ def get_customer(customer_type_id, start_from):
 
         frappe.db.commit()
         
-def get_customer_contact():
-    url = get_samba_url()
+def get_customer_contact(url):
     
     try:
         response = requests.get(url + "/contactSearch")

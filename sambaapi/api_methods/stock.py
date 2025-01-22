@@ -1,9 +1,8 @@
 import frappe, requests, traceback
 from datetime import datetime
-from sambaapi.api_methods.utils import get_samba_url, get_company
+from sambaapi.api_methods.utils import get_company
 
-def get_warehouse():
-    url = get_samba_url()
+def get_warehouse(url):
     
     try:
         response = requests.get(url + "/warehouseSearch")
@@ -16,7 +15,7 @@ def get_warehouse():
                         new_doc = frappe.new_doc("Warehouse")
                         new_doc.warehouse_name = item.get("Name")
                         new_doc.custom_samba_id = item.get("Id")
-                        new_doc.company = get_company()
+                        new_doc.company = get_company(url)
                       
                         new_doc.insert()
                         
@@ -45,8 +44,7 @@ def get_warehouse():
         frappe.db.commit()
 
 
-def get_menu_item_group():
-    url = get_samba_url()
+def get_menu_item_group(url):
     
     try:
         response = requests.get(url + "/menuItemSearch")
@@ -89,8 +87,7 @@ def get_menu_item_group():
         frappe.db.commit()
     
     
-def get_menu_item():
-    url = get_samba_url()
+def get_menu_item1(url):
     
     try:
         response = requests.get(url + "/menuItemSearch")
@@ -132,3 +129,51 @@ def get_menu_item():
         new_doc.insert()
 
         frappe.db.commit()
+
+
+def log_error(doc_type, samba_id=None, error_message=None):
+    """Helper function to log errors."""
+    error_log = frappe.new_doc("Samba Error Logs")
+    error_log.doc_type = doc_type
+    error_log.samba_id = samba_id
+    error_log.error = error_message or traceback.format_exc()
+    error_log.log_time = datetime.now()
+    error_log.insert()
+    frappe.db.commit()
+
+def create_or_update_item(item):
+    """Helper function to create or update an Item document."""
+    doc_exists = frappe.db.exists("Item", {"item_code": item.get("Name")})
+    
+    if not doc_exists:
+        # Create a new Item
+        new_doc = frappe.new_doc("Item")
+        new_doc.item_code = item.get("Name")
+        new_doc.item_name = item.get("Name")
+        new_doc.custom_samba_id = str(item.get("Id"))
+        new_doc.item_group = item.get("GroupCode") or "Products"
+        try:
+            new_doc.save()
+            frappe.db.commit()
+        except:
+            log_error("Item", item.get("Id"))
+    else:
+        # Update the existing Item
+        item_doc = frappe.get_doc("Item", doc_exists)
+        if not item_doc.custom_samba_id == str(item.get("Id")):
+            item_doc.custom_samba_id = item.get("Id")
+            item_doc.save()
+            frappe.db.commit()
+
+def get_menu_item(url):
+    """Fetch menu items from the given URL and update Frappe records."""
+    try:
+        response = requests.get(f"{url}/menuItemSearch")
+        response.raise_for_status()
+        data = response.json()
+        
+        if data:
+            for item in data:
+                create_or_update_item(item)
+    except requests.RequestException:
+        log_error("Connection", error_message="Connection Error")

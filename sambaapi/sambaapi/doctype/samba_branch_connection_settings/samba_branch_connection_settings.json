@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{company}-{branch}",
+ "autoname": "format:{samba_connector_url}",
  "creation": "2025-01-15 19:46:50.883179",
  "default_view": "List",
  "doctype": "DocType",
@@ -43,7 +43,8 @@
   {
    "fieldname": "samba_connector_url",
    "fieldtype": "Data",
-   "label": "Samba Connector Url"
+   "label": "Samba Connector Url",
+   "reqd": 1
   },
   {
    "default": "0",
@@ -156,7 +157,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-15 19:54:49.448635",
+ "modified": "2025-01-23 00:27:44.053028",
  "modified_by": "Administrator",
  "module": "Sambaapi",
  "name": "Samba Branch Connection Settings",

@@ -1,6 +1,5 @@
 # Copyright (c) 2023, dev@opensource and contributors
 # For license information, please see license.txt
-import asyncio
 import frappe, traceback
 from frappe.model.document import Document
 from datetime import datetime
@@ -10,19 +9,23 @@ from sambaapi.api_methods.customer import get_customer_groups, get_customer,  ge
 from sambaapi.api_methods.sales import get_samba_sales
 from sambaapi.api_methods.payments import get_mode_of_payments, get_sales_payments
 
-class SambaInstanceConnectionSettings(Document):
+class SambaBranchConnection(Document):
+    
     @frappe.whitelist()
     def setup_erpnext(self):
         if self.samba_connector_url:
+            url = self.samba_connector_url
             try:
-                get_warehouse()
-                get_menu_item_group()
-                get_menu_item()
+                get_warehouse(url)
+                create_default_item_group()
+                get_menu_item_group(url)
+                get_menu_item(url)
                 create_default_customer_group()
-                get_customer_groups()
+                get_customer_groups(url)
                 create_pos_customer()
         
                 self.connected = 1
+                self.save()
                 
             except:
                 frappe.throw("Something went wrong")
@@ -47,7 +50,7 @@ class SambaInstanceConnectionSettings(Document):
                 datetime_obj2 = datetime.combine(self.from_date, start_time)
                 from_datetime = datetime.strftime(datetime_obj2, "%Y-%m-%d %H:%M:%S")
                             
-            get_customer(self.entity_type_id, from_datetime)
+            get_customer(self.entity_type_id, from_datetime, self.samba_connector_url)
         
                 
     @frappe.whitelist()
@@ -68,7 +71,7 @@ class SambaInstanceConnectionSettings(Document):
         
         if self.sales_from_date and self.sales_to_date:
             try:
-                get_samba_sales(str_start, str_end)
+                get_samba_sales(str_start, str_end, self.samba_connector_url)
                 
             except:
                 frappe.throw("Something went wrong")
@@ -80,8 +83,8 @@ class SambaInstanceConnectionSettings(Document):
         end_datetime = self.payments_to_date
         if self.payments_from_date and self.payments_to_date:
             try:
-                get_mode_of_payments()
-                get_sales_payments(start_datetime, end_datetime)
+                get_mode_of_payments(self.samba_connector_url)
+                get_sales_payments(start_datetime, end_datetime, self.samba_connector_url)
                 
             except:
                 frappe.throw("Something went wrong")            
@@ -114,16 +117,36 @@ def create_default_customer_group():
         try:
             new_doc = frappe.new_doc("Customer Group")
             new_doc.customer_group_name = "Samba Customer"
-            new_doc.parent_customer_group = "All Customer Groups"
+            # new_doc.parent_customer_group = "All Customer Groups"
             
             new_doc.insert()
             
             frappe.db.commit()
         except:
             new_doc = frappe.new_doc("Samba Error Logs")
-            new_doc.doc_type = "Customer"
+            new_doc.doc_type = "Customer Group"
             new_doc.error = traceback.format_exc()
             new_doc.log_time = datetime.now()
             new_doc.insert()
 
             frappe.db.commit()
+            
+def create_default_item_group():
+    doc_exists = frappe.db.exists("Item Group", {"item_group_name": "Products"})
+    if not doc_exists:
+        try:
+            new_doc = frappe.new_doc("Item Group")
+            new_doc.item_group_name = "Products"
+            
+            new_doc.insert()
+            
+            frappe.db.commit()
+        except:
+            new_doc = frappe.new_doc("Samba Error Logs")
+            new_doc.doc_type = "Item Group"
+            new_doc.error = traceback.format_exc()
+            new_doc.log_time = datetime.now()
+            new_doc.insert()
+
+            frappe.db.commit()
+            

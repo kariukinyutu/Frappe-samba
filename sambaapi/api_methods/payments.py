@@ -2,11 +2,8 @@ import frappe
 import requests
 import traceback
 from datetime import datetime
-from sambaapi.api_methods.utils import get_samba_url
 
-
-def get_mode_of_payments():
-    url = get_samba_url()
+def get_mode_of_payments(url):
     
     try:
         response = requests.get(url + "/mopSearch")
@@ -48,9 +45,9 @@ def get_mode_of_payments():
         frappe.db.commit()
 
 
-def get_sales_payments(start_time, end_time):
-    url = get_samba_url()
+def get_sales_payments(start_time, end_time, url):
     ticket_id_list = get_pending_tickets()
+    settings_doc = frappe.get_doc("Samba Branch Connection", url)
     
     try:
         response = requests.get(url + "/paymentSearch?start_datetime=" + start_time + "&end_datetime=" + end_time)
@@ -65,7 +62,7 @@ def get_sales_payments(start_time, end_time):
                 posting_date = dt.strftime("%Y-%#m-%#d")
             
                 if ticket_id in ticket_id_list:
-                    payment_info = get_payment_account(item.get("PaymentTypeId"), id, item.get("Date"))
+                    payment_info = get_payment_account(item.get("PaymentTypeId"), id, item.get("Date"), url)
                     
                     doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
                     if not doc_exists:
@@ -78,6 +75,7 @@ def get_sales_payments(start_time, end_time):
                             new_doc.custom_samba_id = item.get("Id")
                             new_doc.custom_samba_ticket_id = item.get("TicketId")
                             new_doc.party_type = "Customer"
+                            new_doc.company = settings_doc.get("company")
                             new_doc.paid_to = payment_info.get("paid_to")
                             new_doc.reference_no = payment_info.get("reference_no")
                             new_doc.reference_date = payment_info.get("reference_date")
@@ -183,7 +181,7 @@ def get_mop(pay_id):
             
     return mop
 
-def get_payment_account(pay_id, payment_id, cheque_date):
+def get_payment_account(pay_id, payment_id, cheque_date, url):
     payment_info = {}
     mop = "Cash"
     pay_type_id = str(pay_id)
@@ -195,7 +193,7 @@ def get_payment_account(pay_id, payment_id, cheque_date):
     if mop_docs:
         mop = mop_docs[0].get("mode_of_payment")
         
-        settings_doc = frappe.get_doc("Samba Instance Connection Settings", "Samba Instance Connection Settings")
+        settings_doc = frappe.get_doc("Samba Branch Connection", url)
         
         if mop in ["Cheque", "Credit Card", "Wire Transfer", "Bank Draft", "Visa"]:
             payment_info["paid_to"] = settings_doc.get("bank_account") #***********************************need change*************************************
