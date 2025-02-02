@@ -14,6 +14,7 @@ def get_samba_sales(start, end, url):
 
         if data:
             for key, value in data.items():
+                print(key, value)
                 add_missing_items(value)
                
                 doc_exists = frappe.db.exists("Sales Invoice", {"custom_samba_id": key})
@@ -49,6 +50,8 @@ def get_samba_sales(start, end, url):
                         for item_data in value:
                             new_doc.append("items",{
                                 "item_code": item_data.get("item_code"), 
+                                "custom_ticket_id": item_data.get("ticket_id"),
+                                "custom_order_number": item_data.get("order_no"),
                                 "item_name": item_data.get("item_code"),
                                 "qty": item_data.get("qty"),
                                 "rate": item_data.get("rate") or 0
