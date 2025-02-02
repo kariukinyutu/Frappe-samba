@@ -230,10 +230,11 @@ def send_customer_info(data):
 
                         # Check response status
                         if response.status_code == 200:
-                            print("Customer created successfully!")
+                            
+                            return response.status_code
+                        
                         else:
-                            print(f"Failed to create customer. Response: {response.text}")
+                            frappe.throw(f"Failed to create customer. Response: {response.text}")
 
                     except requests.exceptions.RequestException as e:
-                        print(f"Error occurred: {e}")
-                        frappe.throw("Customer Not Created")
+                        frappe.throw(f"Error occurred: {e}")

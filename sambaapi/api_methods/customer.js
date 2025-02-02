@@ -1,16 +1,12 @@
 frappe.ui.form.on("Customer",{
-    onload:function(frm){
-        console.log("loading----1")
-        frm.page.add_action_item('Update Samba', () => updateSambaCustomer(frm), true)
-
-    },
-    // refresh:function(frm){
-    //     console.log("loading----2")
-    //     page.add_action_item('Delete', () => delete_items())
-
-    // }
-
-
+    custom_create_in_sambapos:function(frm){
+        if(!frm.doc.custom_created_in_sambapos == 1){
+            updateSambaCustomer(frm)
+        }
+        else{
+            frappe.msgprint("Customer Is Already Registered!")
+        }
+    }
 })
 
 // Define the delete_items function
@@ -25,9 +21,23 @@ function updateSambaCustomer(frm) {
             }
         },
         callback: function (response) {
-            if (response.message) {
+            frm.set_value("custom_created_in_sambapos", 1); // Properly update the field
+        
+            frm.save().then(() => {
                 frappe.msgprint(__('Samba updated successfully!'));
-            }
+                frm.refresh_field("custom_created_in_sambapos"); // Refresh the field after saving
+            });
+
+            // console.log(response)
+            // if (response.status_code == 200) {
+            //     frm.set_value("custom_created_in_sambapos", 1); // Properly update the field
+        
+            //     frm.save().then(() => {
+            //         frappe.msgprint(__('Samba updated successfully!'));
+            //         frm.refresh_field("custom_created_in_sambapos"); // Refresh the field after saving
+            //     });
+            // }
+            
         },
         error: function (error) {
             frappe.msgprint(__('Failed to update Samba: ' + error.message));
