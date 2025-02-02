@@ -25,7 +25,9 @@ app_license = "mit"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-# page_js = {"page" : "public/js/file.js"}
+doctype_js = {
+    "Customer" : "api_methods/customer.js",
+}
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -129,7 +131,7 @@ app_license = "mit"
 #		"on_trash": "method"
 #	}
 # }
-
+	
 # Scheduled Tasks
 # ---------------
 scheduler_events = {

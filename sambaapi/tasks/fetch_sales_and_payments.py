@@ -5,25 +5,8 @@ import frappe
 
 from sambaapi.api_methods.sales import get_samba_sales
 from sambaapi.api_methods.payments import get_sales_payments
+from sambaapi.api_methods.utils import get_connection_details
 
-def get_connection_details():
-    settings = frappe.get_doc("Samba API Settings", "Samba API Settings")
-    connection_dict = {}
-    con_list = []
-    
-    if settings.get("allow_cron_jobs") == 1:
-        connection_dict["allow_cron_jobs"] = 1
-        if settings.get("configs"):
-            
-            for config in settings.get("configs"):
-                if config.get("active") == 1:
-                    if not config.get("connection_record") in con_list:
-                        con_list.append(config.get("connection_record"))
-                        
-            connection_dict["connections"] = con_list
-                    
-    return connection_dict
-      
 def get_sales():
     connections = get_connection_details()
     if connections.get("allow_cron_jobs") == 1:

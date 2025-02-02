@@ -1,5 +1,9 @@
 import frappe, requests, traceback, json
+from urllib.parse import urlencode
+
 from datetime import datetime
+
+from sambaapi.api_methods.utils import get_connection_details
 
 def get_customer_groups(url):
     
@@ -150,3 +154,86 @@ def get_details(customData):
         list_of_dicts  = json.loads(customData)
     
         return list_of_dicts
+    
+    
+@frappe.whitelist()
+def create_customer():
+    if not frappe.form_dict.message:
+        frappe.throw("Missing 'message' in request data")
+
+    raw_data = frappe.form_dict.message
+
+    if isinstance(raw_data, str):
+        raw_data = json.loads(raw_data)
+
+    data = raw_data.get("data")
+
+    if not data or not data.get("customer"):
+        frappe.throw("Missing 'customer' field in the request data")
+
+    customer_id = data.get("customer")
+    
+    # SQL query to fetch customer details 
+    query = """
+        SELECT
+            customer.customer_name AS customer_name,
+            customer_group.custom_samba_id AS entity_type_id,
+            customer.modified as last_update_time,
+            customer.email_id AS email,
+            customer.custom_idpassport AS passport_id,
+            customer.mobile_no AS mobile_no
+        FROM 
+            `tabCustomer` AS customer
+        LEFT JOIN
+            `tabCustomer Group` AS customer_group
+        ON
+            customer_group.name = customer.customer_group
+        WHERE 
+            customer.name = %s
+    """
+
+    results = frappe.db.sql(query, customer_id, as_dict=True)
+
+    processed_data = process_results(results)
+    
+    send_customer_info(processed_data)
+
+def process_results(results):
+    if results:
+        if results[0].get("last_update_time"):
+           update_datetime_str = datetime.strftime(results[0].get("last_update_time"), "%Y-%M-%d %H:%M:%S")
+           
+           results[0]["last_update_time"] = update_datetime_str
+           
+    return results
+                   
+def send_customer_info(data):
+    if len(data):
+        connections = get_connection_details()
+        if connections.get("allow_cron_jobs") == 1:
+            if connections.get("connections"):
+                for url in connections.get("connections"):                  
+                    # Step 1: Replace single quotes with double quotes to make it JSON-compatible
+                    data_string = json.dumps(data[0], indent=4)
+
+                    json_compatible_string = data_string.replace("'", '"')
+
+                    # Step 2: Parse the JSON-compatible string into a Python dictionary
+                    data_dict = json.loads(json_compatible_string)
+
+                    # Step 3: Convert the Python dictionary back to a JSON string (formatted)
+                    json_string = json.dumps(data_dict, indent=4)
+                                        
+                    try:
+                        # Send the request
+                        response = requests.post(f"{url}/addCustomer?data={json_string}")
+
+                        # Check response status
+                        if response.status_code == 200:
+                            print("Customer created successfully!")
+                        else:
+                            print(f"Failed to create customer. Response: {response.text}")
+
+                    except requests.exceptions.RequestException as e:
+                        print(f"Error occurred: {e}")
+                        frappe.throw("Customer Not Created")

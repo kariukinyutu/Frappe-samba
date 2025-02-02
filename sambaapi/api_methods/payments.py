@@ -64,41 +64,43 @@ def get_sales_payments(start_time, end_time, url):
                 if ticket_id in ticket_id_list:
                     payment_info = get_payment_account(item.get("PaymentTypeId"), id, item.get("Date"), url)
                     
-                    doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
-                    if not doc_exists:
-                        try:
-                            new_doc = frappe.new_doc("Payment Entry")
-                            new_doc.payment_type = "Receive"
-                            # new_doc.company = get_erp_company(),
-                            new_doc.posting_date = posting_date
-                            new_doc.mode_of_payment = get_mop(item.get("PaymentTypeId")) or "Cash"
-                            new_doc.custom_samba_id = item.get("Id")
-                            new_doc.custom_samba_ticket_id = item.get("TicketId")
-                            new_doc.party_type = "Customer"
-                            new_doc.company = settings_doc.get("company")
-                            new_doc.paid_to = payment_info.get("paid_to")
-                            new_doc.reference_no = payment_info.get("reference_no")
-                            new_doc.reference_date = payment_info.get("reference_date")
-                            new_doc.paid_to_account_currency = "KES"
-                            new_doc.party = get_invoice_customer(item.get("TicketId"))
-                            new_doc.paid_amount = float(item.get("Amount"))
-                            new_doc.received_amount = float(item.get("Amount"))
-                            new_doc.target_exchange_rate = 1
-                            # new_doc.docstatus = 1
-                            new_doc.insert()
-                            frappe_doc = frappe.get_doc("Payment Entry", new_doc.name)
-                            
-                            add_outstanding_sales(frappe_doc)
-                            
-                            frappe.db.commit()
-                        except:
-                            new_doc = frappe.new_doc("Samba Error Logs")
-                            new_doc.doc_type = "Payment Entry"
-                            new_doc.error = traceback.format_exc()
-                            new_doc.log_time = datetime.now()
-                            new_doc.insert()
+                    if payment_info.get("paid_to"):
+                    
+                        doc_exists = frappe.db.exists("Payment Entry", {"custom_samba_id": id, "docstatus":["!=", 2]})
+                        if not doc_exists:
+                            try:
+                                new_doc = frappe.new_doc("Payment Entry")
+                                new_doc.payment_type = "Receive"
+                                # new_doc.company = get_erp_company(),
+                                new_doc.posting_date = posting_date
+                                new_doc.mode_of_payment = get_mop(item.get("PaymentTypeId")) or "Cash"
+                                new_doc.custom_samba_id = item.get("Id")
+                                new_doc.custom_samba_ticket_id = item.get("TicketId")
+                                new_doc.party_type = "Customer"
+                                new_doc.company = settings_doc.get("company")
+                                new_doc.paid_to = payment_info.get("paid_to")
+                                new_doc.reference_no = payment_info.get("reference_no")
+                                new_doc.reference_date = payment_info.get("reference_date")
+                                new_doc.paid_to_account_currency = "KES"
+                                new_doc.party = get_invoice_customer(item.get("TicketId"))
+                                new_doc.paid_amount = float(item.get("Amount"))
+                                new_doc.received_amount = float(item.get("Amount"))
+                                new_doc.target_exchange_rate = 1
+                                # new_doc.docstatus = 1
+                                new_doc.insert()
+                                frappe_doc = frappe.get_doc("Payment Entry", new_doc.name)
+                                
+                                add_outstanding_sales(frappe_doc)
+                                
+                                frappe.db.commit()
+                            except:
+                                new_doc = frappe.new_doc("Samba Error Logs")
+                                new_doc.doc_type = "Payment Entry"
+                                new_doc.error = traceback.format_exc()
+                                new_doc.log_time = datetime.now()
+                                new_doc.insert()
 
-                            frappe.db.commit()
+                                frappe.db.commit()
     except:
         new_doc = frappe.new_doc("Samba Error Logs")
         new_doc.doc_type = "Connection"
@@ -183,7 +185,7 @@ def get_mop(pay_id):
 
 def get_payment_account(pay_id, payment_id, cheque_date, url):
     payment_info = {}
-    mop = "Cash"
+    mop = ""
     pay_type_id = str(pay_id)
     mop_docs = frappe.db.get_all("Mode of Payment", filters={"custom_samba_id": pay_type_id}, fields=["mode_of_payment"])
     
@@ -204,6 +206,11 @@ def get_payment_account(pay_id, payment_id, cheque_date, url):
             payment_info["paid_to"] =  settings_doc.get("mpesa_account")#***********************************need change*************************************
             payment_info["reference_no"] = payment_id
             payment_info["reference_date"] = posting_date
+        
+        elif mop in ["Customer Account"]:
+            payment_info["paid_to"] =  "" #***********************************need change*************************************
+            payment_info["reference_no"] = ""
+            payment_info["reference_date"] = ""
         
         else:
             payment_info["paid_to"] = settings_doc.get("cash_account") #***********************************need change*************************************
