@@ -144,12 +144,21 @@ def log_error(doc_type, samba_id=None, error_message=None):
 def create_or_update_item(item):
     """Helper function to create or update an Item document."""
     doc_exists = frappe.db.exists("Item", {"item_code": item.get("Name")})
+    uom_exists = frappe.db.exists("UOM", {"name": item.get("UOM")})
+    
+    if not uom_exists:
+        new_uom = frappe.new_doc("UOM")
+        new_uom.uom_name = item.get("UOM")
+   
+        new_uom.save()
+        frappe.db.commit() 
     
     if not doc_exists:
         # Create a new Item
         new_doc = frappe.new_doc("Item")
         new_doc.item_code = item.get("Name")
         new_doc.item_name = item.get("Name")
+        new_doc.stock_uom = item.get("UOM")
         new_doc.custom_samba_id = str(item.get("Id"))
         new_doc.item_group = item.get("GroupCode") or "Products"
         try:
@@ -162,6 +171,7 @@ def create_or_update_item(item):
         item_doc = frappe.get_doc("Item", doc_exists)
         if not item_doc.custom_samba_id == str(item.get("Id")):
             item_doc.custom_samba_id = item.get("Id")
+            item_doc.UOM = item.get("UOM")
             item_doc.save()
             frappe.db.commit()
 

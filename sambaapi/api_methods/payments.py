@@ -218,4 +218,4 @@ def get_payment_account(pay_id, payment_id, cheque_date, url):
             payment_info["reference_date"] = ""
 
     return payment_info
-    
+
